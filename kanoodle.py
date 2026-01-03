@@ -94,7 +94,7 @@ class GamePiece(object):
         # proceeds in english language from there.
         # 
         # There are many ways to do this.  One of the most portable way to
-        # map a 2D grid into a list is row by row, where value(0,0) is 1; and value(0,1) is MaxY + 1.
+        # place a 2D grid into a list is row by row, where value(0,0) is 1; and value(0,1) is MaxY + 1.
         # Since Kanoodle knows in advance there's at most 4 pips in any direction, it will
         # be much simpler to just set the value(X,Y) = X + 10 * Y.
         #
@@ -126,20 +126,20 @@ class GamePiece(object):
             pip.Y = pip.Y + self.maxY
         self.normalize()
     
-    def unmap(self,field):
+    def pickup(self,field):
         for Y in range(len(field)):
             for X in range(len(field[Y])):
                 if field[Y][X] == self.name:
                     field[Y][X] = " "
     
-    def map(self,field,X,Y):
+    def place(self,field,X,Y):
         for pip in self.pips:
             FieldX = pip.X + X
             FieldY = pip.Y + Y
             if field[FieldY][FieldX] == " ":
                 field[FieldY][FieldX] = self.name
             else:
-                self.unmap(field)
+                self.pickup(field)
                 return False
         return True
 
@@ -173,6 +173,24 @@ class GamePiece(object):
 class Kanoodle(object):
 
     def __init__(self, dat_filename, width, height):
+
+        self.colors = dict()
+        self.colors["A"] = '\x1B[38;5;208m'
+        self.colors["B"] = '\x1B[38;5;196m'
+        self.colors["C"] = '\x1B[38;5;20m'
+        self.colors["D"] = '\x1B[38;5;222m'
+        self.colors["E"] = '\x1B[38;5;34m'
+        self.colors["F"] = '\x1B[38;5;15m'
+        self.colors["G"] = '\x1B[38;5;14m'
+        self.colors["H"] = '\x1B[38;5;163m'
+        self.colors["I"] = '\x1B[38;5;226m'
+        self.colors["J"] = '\x1B[38;5;165m'
+        self.colors["K"] = '\x1B[38;5;82m'
+        self.colors["L"] = '\x1B[38;5;245m'
+        self.colors[0]   = '\x1B[38;5;255m'
+
+
+
         self.height = height
         self.width = width
         self.pieces = dict()
@@ -206,15 +224,34 @@ class Kanoodle(object):
             outs = f'{outs}{row}\n'
 
         return outs.rstrip()
+    
+    def redraw(self):
+        for row in self.field:
+            srow = ""
+            for letter in row:
+                if letter == " ":
+                    srow += self.colors[0] + "-" + " "
+                else:
+                    srow += self.colors[letter] + letter + " "
+            print(srow + self.colors[0])
+        print("")
 
 
 if __name__ == "__main__":
     k = Kanoodle(DAT_FILENAME,11,5)
-    for P in "ABCDEFGHI":
-        for j in range(2):
-            for i in range(4):
-                k.pieces[P].map(k.field,0,0)
-                print(f'{k}\n')
-                k.pieces[P].unmap(k.field)
-                k.pieces[P].ror()
-            k.pieces[P].flip()
+#    for P in "ABCDEFGHIJKL":
+#        for j in range(2):
+#            for i in range(4):
+#                k.pieces[P].place(k.field,0,0)
+#                k.redraw()
+#                k.pieces[P].pickup(k.field)
+#                k.pieces[P].ror()
+#            k.pieces[P].flip()
+    k = Kanoodle(DAT_FILENAME,11,5)
+    k.pieces["A"].place(k.field,0,0)
+    k.pieces["J"].place(k.field,0,1)
+    k.pieces["K"].place(k.field,1,3)
+    k.pieces["E"].ror()
+    k.pieces["E"].ror()
+    k.pieces["E"].place(k.field,2,0)
+    k.redraw()
