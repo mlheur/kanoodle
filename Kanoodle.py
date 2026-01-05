@@ -16,7 +16,11 @@
 # Yellow      I:1,1;2,1;3,1;1,2;3,2
 
 DAT_FILENAME = "GamePieces.dat"
+START_FILENAME = "StartingPositions.dat"
+PIECE_STRING = "ABCDEFGHIJKL"
 
+from sys import argv
+from Solver import Solver
 
 class Pip(object):
 
@@ -59,9 +63,9 @@ class GamePiece(object):
 
     def __init__(self, piece_line):
         self.pips = list()
-        piece_parts = piece_line.split(":")
-        self.name = piece_parts[0]
-        all_points = piece_parts[1].split(";")
+        piece_gameentry = piece_line.split(":")
+        self.name = piece_gameentry[0]
+        all_points = piece_gameentry[1].split(";")
         self.maxX = 0
         self.maxY = 0
         for pt in all_points:
@@ -130,13 +134,13 @@ class GamePiece(object):
         for Y in range(len(field)):
             for X in range(len(field[Y])):
                 if field[Y][X] == self.name:
-                    field[Y][X] = " "
+                    field[Y][X] = "-"
     
     def place(self,field,X,Y):
         for pip in self.pips:
             FieldX = pip.X + X
             FieldY = pip.Y + Y
-            if field[FieldY][FieldX] == " ":
+            if field[FieldY][FieldX] == "-":
                 field[FieldY][FieldX] = self.name
             else:
                 self.pickup(field)
@@ -187,9 +191,8 @@ class Kanoodle(object):
         self.colors["J"] = '\x1B[38;5;165m'
         self.colors["K"] = '\x1B[38;5;82m'
         self.colors["L"] = '\x1B[38;5;245m'
-        self.colors[0]   = '\x1B[38;5;255m'
-
-
+        self.colors["-"] = '\x1B[38;5;234m'
+        self.colors[0]   = '\x1B[0m'
 
         self.height = height
         self.width = width
@@ -210,7 +213,7 @@ class Kanoodle(object):
         
         self.field = list()
         for Y in range(self.height):
-            self.field.append(list(" "*self.width))
+            self.field.append(list("-"*self.width))
         
     def __str__(self):
         outs = ""
@@ -219,27 +222,53 @@ class Kanoodle(object):
 #                outs = f'{piece}\n'
 #            else:
 #                outs = f'{outs}{piece}\n'
-
         for row in self.field:
             outs = f'{outs}{row}\n'
-
         return outs.rstrip()
     
     def redraw(self):
         for row in self.field:
             srow = ""
             for letter in row:
-                if letter == " ":
-                    srow += self.colors[0] + "-" + " "
-                else:
-                    srow += self.colors[letter] + letter + " "
+                srow += self.colors[letter] + letter + " "
             print(srow + self.colors[0])
         print("")
 
+    def load(self,load_filename,gameid):
+        try:
+            with open(load_filename, 'r', encoding='utf-8') as f:
+                gameline = f.readline().rstrip()
+                gameentry = gameline.split(":")
+                print(f'Starting to load game {gameid} from file {load_filename}')
+                if gameentry[0] == str(gameid):
+                    for pieceentry in gameentry[1].split(";"):
+                        piecepos = pieceentry.split(",")
+                        P = piecepos[0]
+                        X = int(piecepos[1]) - 1
+                        Y = int(piecepos[2]) - 1
+                        for n in range(len(piecepos)-3):
+                            n += 3
+                            if piecepos[n] == "rol":
+                                self.pieces[P].rol()
+                            if piecepos[n] == "ror":
+                                self.pieces[P].ror()
+                            if piecepos[n] == "flip":
+                                self.pieces[P].flip()
+                        if not self.pieces[P].place(self.field,X,Y):
+                            raise(RuntimeError(f"Unable to place piece {P} from gameid {gameid} from file {load_filename}"))
+                        self.redraw()
+                    print(f'Finished loading game {gameid} from file {load_filename}')
+                    return
+        except FileNotFoundError:
+            print(f'Fata: Could not find [{load_filename}]')
+            return
+        except Exception as e:
+            print(f'Fatal error [{e}]')
+            return
 
 if __name__ == "__main__":
-    k = Kanoodle(DAT_FILENAME,11,5)
-#    for P in "ABCDEFGHIJKL":
+#    k = Kanoodle(DAT_FILENAME,11,5)
+#    for P in PIECE_STRING:
 #        for j in range(2):
 #            for i in range(4):
 #                k.pieces[P].place(k.field,0,0)
@@ -248,16 +277,11 @@ if __name__ == "__main__":
 #                k.pieces[P].ror()
 #            k.pieces[P].flip()
     k = Kanoodle(DAT_FILENAME,11,5)
-    k.pieces["A"].place(k.field,0,0)
-    k.pieces["J"].place(k.field,0,1)
-    k.pieces["K"].place(k.field,1,3)
-    k.pieces["E"].ror()
-    k.pieces["E"].ror()
-    k.pieces["E"].place(k.field,2,0)
-    k.redraw()
-    k.pieces["J"].pickup(k.field)
-    k.pieces["J"].ror()
-    k.pieces["J"].place(k.field,3,0)
-    k.redraw()
-    k.pieces["L"].place(k.field,6,0)
-    k.redraw()
+    if "-layout" in argv:
+        for P in PIECE_STRING:
+            k.pieces[P].place(k.field,0,0)
+            k.redraw()
+            k.pieces[P].pickup(k.field)
+    else:
+        k.load(START_FILENAME,13)
+        Solver().solve(k)
