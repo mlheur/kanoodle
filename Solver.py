@@ -2,9 +2,10 @@
 
 class Solver(object):
     def solve(self,k):
-        print("++solve")
+        print(f"++solve(k=[\n{k}\n])")
         # Zeroeth: determine what are all the pieces of the game
-        from Kanoodle import PIECE_STRING, EMPTY
+        from Kanoodle import PIECE_STRING
+        from Piece import EMPTY
         
         # First determine which game pieces are
         # off the board, in the player's hand.
@@ -49,6 +50,9 @@ class Solver(object):
                         localX += 1
                         if letter == EMPTY:
                             # Normalize the desired X,Y drop coordinate.
-                            offXY = k.pieces[piece].getLeftOffset()
-                            dropX = localX + offXY[0]
+                            dropX = localX + k.pieces[piece].getLeftOffset()
                             dropY = localY # There's always a piece in the top row.
+
+
+if __name__ == "__main__":
+    print("Use ./run.sh to run this solver from within Kanoodle.py")
