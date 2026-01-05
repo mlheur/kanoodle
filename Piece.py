@@ -4,7 +4,7 @@ EMPTY = "-"
 from Pip import Pip
 
 
-class GamePiece(object):
+class Piece(object):
 
     def __init__(self, piece_line):
         
@@ -102,26 +102,26 @@ class GamePiece(object):
 
 
 if __name__ == "__main__":
-    gp = GamePiece("X:1,1;2,1;3,1;1,2;3,2")
-    print(f'PreRor: {gp}')
-    gp.ror()
-    print(f'PosRor: {gp}')
-    gp.ror()
-    print(f'Furthr: {gp}')
-    gp.ror()
-    print(f'Fourth: {gp}')
-    gp.ror()
+    p = Piece("X:1,1;2,1;3,1;1,2;3,2")
+    print(f'PreRor: {p}')
+    p.ror()
+    print(f'PosRor: {p}')
+    p.ror()
+    print(f'Furthr: {p}')
+    p.ror()
+    print(f'Fourth: {p}')
+    p.ror()
     print("")
-    print(f'PreRol: {gp}')
-    gp.rol()
-    print(f'PosRol: {gp}')
-    gp.rol()
-    print(f'Furthr: {gp}')
-    gp.rol()
-    print(f'Fourth: {gp}')
-    gp.rol()
+    print(f'PreRol: {p}')
+    p.rol()
+    print(f'PosRol: {p}')
+    p.rol()
+    print(f'Furthr: {p}')
+    p.rol()
+    print(f'Fourth: {p}')
+    p.rol()
     print("")
-    print(f'PreFlip: {gp}')
-    gp.flip()
-    print(f'PosFlip: {gp}')
+    print(f'PreFlip: {p}')
+    p.flip()
+    print(f'PosFlip: {p}')
     print("")

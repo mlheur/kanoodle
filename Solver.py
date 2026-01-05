@@ -4,7 +4,6 @@ class Solver(object):
     def solve(self,k):
         print(f"++solve(k=[\n{k}\n])")
         # Zeroeth: determine what are all the pieces of the game
-        from Kanoodle import PIECE_STRING
         from Piece import EMPTY
         
         # First determine which game pieces are
@@ -13,10 +12,10 @@ class Solver(object):
         pieces_inhand = dict()
         for row in k.field:
             for letter in row:
-                if letter in PIECE_STRING:
+                if letter in k.PIECE_STRING:
                     pieces_onboard[letter] = True
 
-        for P in PIECE_STRING:
+        for P in k.PIECE_STRING:
             if not P in pieces_onboard:
                 pieces_inhand[P] = True
 
