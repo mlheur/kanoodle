@@ -15,9 +15,26 @@
 # Magenta     H:1,1;1,2;2,2;2,3;3,3
 # Yellow      I:1,1;2,1;3,1;1,2;3,2
 
+## Design Choice:
+# The math used to rotate pieces want a 0,0 coordinate system;
+# Humans want a 1,1 coordinate system.
+# Either:
+# - Force one choice over the other.
+#  - 1-based means having to inc/dec before AND after EVERY operation.
+#  - 0-based means debugging, dat files and other programmer interactions have to
+#    use a non-intuitive base.
+# - Compromise:
+#  - 1-based DAT files, decrement on load
+#  - 0-based internally
+#  - remember to increment on output
+
+
+
+
 DAT_FILENAME = "GamePieces.dat"
 START_FILENAME = "StartingPositions.dat"
 PIECE_STRING = "ABCDEFGHIJKL"
+EMPTY = "-"
 
 from sys import argv
 from Solver import Solver
@@ -134,18 +151,23 @@ class GamePiece(object):
         for Y in range(len(field)):
             for X in range(len(field[Y])):
                 if field[Y][X] == self.name:
-                    field[Y][X] = "-"
+                    field[Y][X] = EMPTY
     
     def place(self,field,X,Y):
         for pip in self.pips:
             FieldX = pip.X + X
             FieldY = pip.Y + Y
-            if field[FieldY][FieldX] == "-":
+            if field[FieldY][FieldX] == EMPTY:
                 field[FieldY][FieldX] = self.name
             else:
                 self.pickup(field)
                 return False
         return True
+    
+    def getLeftOffset(self):
+        offX = 0
+        to do
+        return(offX)
 
 
 #if __name__ == "__main__":
@@ -176,7 +198,7 @@ class GamePiece(object):
 
 class Kanoodle(object):
 
-    def __init__(self, dat_filename, width, height):
+    def __init__(self, dat_filename):
 
         self.colors = dict()
         self.colors["A"] = '\x1B[38;5;208m'
@@ -191,14 +213,15 @@ class Kanoodle(object):
         self.colors["J"] = '\x1B[38;5;165m'
         self.colors["K"] = '\x1B[38;5;82m'
         self.colors["L"] = '\x1B[38;5;245m'
-        self.colors["-"] = '\x1B[38;5;234m'
+        self.colors[EMPTY] = '\x1B[38;5;234m'
         self.colors[0]   = '\x1B[0m'
 
-        self.height = height
-        self.width = width
         self.pieces = dict()
         try:
             with open(dat_filename, 'r', encoding='utf-8') as f:
+                dimensions = f.readline().rstrip().split(",")
+                self.width = int(dimensions[0])
+                self.height = int(dimensions[1])
                 piece_line = f.readline().rstrip()
                 while piece_line:
                     gp = GamePiece(piece_line)
@@ -213,7 +236,7 @@ class Kanoodle(object):
         
         self.field = list()
         for Y in range(self.height):
-            self.field.append(list("-"*self.width))
+            self.field.append(list(EMPTY*self.width))
         
     def __str__(self):
         outs = ""
@@ -243,19 +266,19 @@ class Kanoodle(object):
                 if gameentry[0] == str(gameid):
                     for pieceentry in gameentry[1].split(";"):
                         piecepos = pieceentry.split(",")
-                        P = piecepos[0]
+                        piece = piecepos[0]
                         X = int(piecepos[1]) - 1
                         Y = int(piecepos[2]) - 1
                         for n in range(len(piecepos)-3):
                             n += 3
                             if piecepos[n] == "rol":
-                                self.pieces[P].rol()
+                                self.pieces[piece].rol()
                             if piecepos[n] == "ror":
-                                self.pieces[P].ror()
+                                self.pieces[piece].ror()
                             if piecepos[n] == "flip":
-                                self.pieces[P].flip()
-                        if not self.pieces[P].place(self.field,X,Y):
-                            raise(RuntimeError(f"Unable to place piece {P} from gameid {gameid} from file {load_filename}"))
+                                self.pieces[piece].flip()
+                        if not self.pieces[piece].place(self.field,X,Y):
+                            raise(RuntimeError(f"Unable to place piece {piece} from gameid {gameid} from file {load_filename}"))
                         self.redraw()
                     print(f'Finished loading game {gameid} from file {load_filename}')
                     return
@@ -267,7 +290,7 @@ class Kanoodle(object):
             return
 
 if __name__ == "__main__":
-#    k = Kanoodle(DAT_FILENAME,11,5)
+#    k = Kanoodle(DAT_FILENAME)
 #    for P in PIECE_STRING:
 #        for j in range(2):
 #            for i in range(4):
@@ -276,12 +299,12 @@ if __name__ == "__main__":
 #                k.pieces[P].pickup(k.field)
 #                k.pieces[P].ror()
 #            k.pieces[P].flip()
-    k = Kanoodle(DAT_FILENAME,11,5)
+    k = Kanoodle(DAT_FILENAME)
     if "-layout" in argv:
-        for P in PIECE_STRING:
-            k.pieces[P].place(k.field,0,0)
+        for piece in PIECE_STRING:
+            k.pieces[piece].place(k.field,0,0)
             k.redraw()
-            k.pieces[P].pickup(k.field)
+            k.pieces[piece].pickup(k.field)
     else:
         k.load(START_FILENAME,13)
         Solver().solve(k)
