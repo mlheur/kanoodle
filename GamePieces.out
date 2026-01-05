@@ -1,0 +1,78 @@
+# This file gives an example of the starting orientation of each piece according to
+# GamePieces.dat; this is necessary because the initial playfield layout is populated
+# with pieces in a given orientation.  Since orientations are ephemeral and unlabelled,
+# knowing the on-disk orientation of each piece will help set the initial orientation
+# when placing the pre-set pieces on a game.
+
+$ python3 kanoodle.py -layout
+A A - - - - - - - - -
+- A - - - - - - - - -
+- A - - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+
+B B - - - - - - - - -
+B B - - - - - - - - -
+- B - - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+
+C C - - - - - - - - -
+C - - - - - - - - - -
+C - - - - - - - - - -
+C - - - - - - - - - -
+- - - - - - - - - - -
+
+D - - - - - - - - - -
+D - - - - - - - - - -
+D D - - - - - - - - -
+D - - - - - - - - - -
+- - - - - - - - - - -
+
+E - - - - - - - - - -
+E E - - - - - - - - -
+- E - - - - - - - - -
+- E - - - - - - - - -
+- - - - - - - - - - -
+
+F - - - - - - - - - -
+F F - - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+
+G - - - - - - - - - -
+G - - - - - - - - - -
+G G G - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+
+H - - - - - - - - - -
+H H - - - - - - - - -
+- H H - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+
+I I I - - - - - - - -
+I - I - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+
+J - - - - - - - - - -
+J - - - - - - - - - -
+J - - - - - - - - - -
+J - - - - - - - - - -
+- - - - - - - - - - -
+
+K K - - - - - - - - -
+K K - - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
+
+- L - - - - - - - - -
+L L L - - - - - - - -
+- L - - - - - - - - -
+- - - - - - - - - - -
+- - - - - - - - - - -
