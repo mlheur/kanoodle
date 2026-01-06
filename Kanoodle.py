@@ -1,49 +1,14 @@
-# List of Game Pieces.
-#  Syntax: x,y values of any one rotation of all the pips on a piece.
-# X :=> the column, the distance along the X axis, with 0 as leftmost and max_cols as rightmost.
-# Y :=> the row, the distance down the Y axis, with 0 as the topmost and max_rows as bottommost.
-# White       F:1,1;1,2;2,2
-# Purple      J:1,1;1,2;1,4;1,4
-# Orange      A:1,1;2,1;2,2;2,3
-# BrightGreen K:1,1;1,2;2,1;2,2
-# DarkGreen   E:1,1;1,2;2,2;2,3;2,4
-# Red         B:1,1;1,2;2,1;2,2;2,3
-# Azure       G:1,1;1,2,1,3;2,3;3,3
-# Grey        L:1,2;2,1;2,2;2,3;3,2
-# Blue        C:1,1;1,2;1,3;1,4;2,1
-# Pink        D:1,1;1,2;1,3;1,4;2,3
-# Magenta     H:1,1;1,2;2,2;2,3;3,3
-# Yellow      I:1,1;2,1;3,1;1,2;3,2
-
-## Design Choice:
-# The math used to rotate pieces want a 0,0 coordinate system;
-# Humans want a 1,1 coordinate system.
-# Either:
-# - Force one choice over the other.
-#  - 1-based means having to inc/dec before AND after EVERY operation.
-#  - 0-based means debugging, dat files and other programmer interactions have to
-#    use a non-intuitive base.
-# - Compromise:
-#  - 1-based DAT files, decrement on load
-#  - 0-based internally
-#  - remember to increment on output
-
-
-DAT_FILENAME = "GamePieces.dat"
-START_FILENAME = "StartingPositions.dat"
-
-
 from Piece import Piece
 from Solver import Solver
 
 
 class Kanoodle(object):
-    PIECE_STRING = "ABCDEFGHIJKL"
+    width = 11
+    height = 5
 
-    def __init__(self, dat_filename):
+    def __init__(self):
         self.colors = dict()
-        from Piece import EMPTY
-        self.colors[EMPTY] = '\x1B[38;5;234m'
+        self.colors[Piece.EMPTY] = '\x1B[38;5;234m'
         self.colors["A"] = '\x1B[38;5;208m'
         self.colors["B"] = '\x1B[38;5;196m'
         self.colors["C"] = '\x1B[38;5;20m'
@@ -58,27 +23,14 @@ class Kanoodle(object):
         self.colors["L"] = '\x1B[38;5;245m'
         self.colors[0]   = '\x1B[0m'
 
+        DATA = list(Piece.DATA)
         self.pieces = dict()
-        try:
-            with open(dat_filename, 'r', encoding='utf-8') as f:
-                dimensions = f.readline().rstrip().split(",")
-                self.width = int(dimensions[0])
-                self.height = int(dimensions[1])
-                piece_line = f.readline().rstrip()
-                while piece_line:
-                    gp = Piece(piece_line)
-                    self.pieces[gp.name] = gp
-                    piece_line = f.readline().rstrip()
-        except FileNotFoundError:
-            print(f'Fata: Could not find [{dat_filename}]')
-            return
-        except Exception as e:
-            print(f'Fatal error [{e}]')
-            return
-        
+        for P in Piece.STRING:
+            self.pieces[P] = Piece(DATA.pop(0))
+
         self.field = list()
         for Y in range(self.height):
-            self.field.append(list(EMPTY*self.width))
+            self.field.append(list(Piece.EMPTY*self.width))
         
     def __str__(self):
         outs = ""
@@ -129,26 +81,32 @@ class Kanoodle(object):
             print(f'Fatal error [{e}]')
             return
 
+
+def SyntaxError():
+    print()
+
 if __name__ == "__main__":
     
-    k = Kanoodle(DAT_FILENAME)
-
-#    for P in PIECE_STRING:
-#        for j in range(2):
-#            for i in range(4):
-#                k.pieces[P].place(k.field,0,0)
-#                k.redraw()
-#                k.pieces[P].pickup(k.field)
-#                k.pieces[P].ror()
-#            k.pieces[P].flip()
+    k = Kanoodle()
 
     from sys import argv
+    DollarZero = argv.pop(0)
+
     if "-layout" in argv:
-        for piece in PIECE_STRING:
+        for piece in Piece.STRING:
             k.pieces[piece].place(0,0)
             k.redraw()
             k.pieces[piece].pickup()
+    elif "-rotations" in argv:
+        for P in Piece.STRING:
+            for j in range(2):
+                for i in range(4):
+                    k.pieces[P].place(k.field,0,0)
+                    k.redraw()
+                    k.pieces[P].pickup(k.field)
+                    k.pieces[P].ror()
+                k.pieces[P].flip()
     else:
-        k.load(START_FILENAME,13)
+        k.load(argv.pop(0),argv.pop(0))
         try: Solver().solve(k)
         except KeyboardInterrupt: pass
