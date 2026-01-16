@@ -19,6 +19,12 @@ class Piece(object):
         "L:0,1;1,0;1,1;1,2;2,1",
     ]
 
+    def _hash_orientation(self):
+        OUTS = ""
+        for pip in self.pips:
+            OUTS = f'{int(pip)}{OUTS}'
+        return(OUTS)
+
     def __init__(self, piece_line):
         piece_gameentry = piece_line.split(":")
         self.name = piece_gameentry[0]
@@ -34,13 +40,30 @@ class Piece(object):
                 if aXY[a] > self.max[a]:
                     self.max[a] = aXY[a]
             self.pips.append(Pip(aXY))
-
-        self.normalize()
-        key = self._hash_orientation()
-        self.cache["orients"] = dict()
-        self.cache["orients"][key] = list(self.pips)
-
+        
         self.cache = dict()
+        self.cache["orients"] = dict()
+        self.cache["KI_index"] = dict()
+        self.cache["IK_index"] = dict()
+        
+        self.cache["complete"] = False
+
+        i = 0
+        for F in range(2):
+            for R in range(4):
+                key = self._hash_orientation()
+                self.cache["orients"][key] = list(self.pips)
+                if not key in self.cache["KI_index"]:
+                    self.cache["KI_index"][key] = i
+                    self.cache["IK_index"][i] = key
+                    i += 1
+                self.ror()
+            self.flip()
+        self.cache["permutations"] = i
+        self.cache["halfflip"] = i / 2
+        self.cache["i"] = i - 1
+
+        self.cache["complete"] = True
 
         outs = ""
         for pip in self.pips:
@@ -53,14 +76,14 @@ class Piece(object):
 
         
     def __str__(self):
-        if "str" in self.cache: return self.cache["str"]
+        return self.cache["str"]
 
     def normalize(self):
         self.pips.sort(key=lambda p: int(p))
         OUTS = ""
         for pip in self.pips:
             for key in "XY":
-                OUTS += pip[key]
+                OUTS += str(pip[key])
         return(int(OUTS))
 
     def swapXY(self):
@@ -70,6 +93,12 @@ class Piece(object):
         }
 
     def ror(self):
+        if self.cache["complete"]:
+            i = self.cache["i"]
+            i += 1
+            i %= self.cache["permutations"]
+            self.cache["i"] = i
+            return
         self.swapXY()
         for pip in self.pips:
             pip.ror()
@@ -78,6 +107,12 @@ class Piece(object):
         self.normalize()
 
     def rol(self):
+        if self.cache["complete"]:
+            i = self.cache["i"]
+            i -= 1
+            i %= self.cache["permutations"]
+            self.cache["i"] = i
+            return
         self.swapXY()
         for pip in self.pips:
             pip.rol()
@@ -86,6 +121,12 @@ class Piece(object):
         self.normalize()
     
     def flip(self):
+        if self.cache["complete"]:
+            i = self.cache["i"]
+            i += self.cache["halfflip"]
+            i %= self.cache["permutations"]
+            self.cache["i"] = i
+            return
         for pip in self.pips:
             pip["Y"] *= -1
             key = "Y"
@@ -99,7 +140,8 @@ class Piece(object):
                     field[Y][X] = self.EMPTY
     
     def place(self,field,X,Y):
-        for pip in self.pips:
+        key = self.cache["IK_index"][self.cache["i"]]
+        for pip in self.cache["orients"][key]:
             FieldX = pip["X"] + X
             FieldY = pip["Y"] + Y
             if field[FieldY][FieldX] == self.EMPTY:

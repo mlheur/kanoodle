@@ -9,14 +9,16 @@ class Pip(dict):
         else:
             for key in "XY":
                 self[key] = coords[key]
+        
+        self.cache = dict()
+        self.cache["str"] = f'{",".join(str(v) for v in self.values())}'
+        self.cache["int"] = 10 * self["Y"] + self["X"]
 
     def __str__(self):
-        return(f'{",".join(str(v) for v in self.values())}')
+        return(self.cache["str"])
 
     def __int__(self):
-        return(
-            10 * self["Y"] + self["X"]
-        )
+        return(self.cache["int"])
     
     def rotate(self,sine_theta):
         Pip.__init__(
