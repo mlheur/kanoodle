@@ -149,3 +149,10 @@ if __name__ == "__main__":
                 k.pieces[P].pickup(k.field)
                 k.pieces[P].ror()
             k.pieces[P].flip()
+    # -unique
+    for P in k.PIECE_STRING:
+        while k.pieces[P].next():
+            k.pieces[P].place(k.field,0,0)
+            k.redraw()
+            k.pieces[P].pickup(k.field)
+
