@@ -128,17 +128,17 @@ if __name__ == "__main__":
     k = Kanoodle(argv.pop(0))
     k.redraw()
 
-    if "-layout" in argv:
-        for piece in PIECE_STRING:
-            k.pieces[piece].place(0,0)
-            k.redraw()
-            k.pieces[piece].pickup()
-    elif "-rotations" in argv:
-        for P in Piece.STRING:
-            for j in range(2):
-                for i in range(4):
-                    k.pieces[P].place(k.field,0,0)
-                    k.redraw()
-                    k.pieces[P].pickup(k.field)
-                    k.pieces[P].ror()
-                k.pieces[P].flip()
+    # -layout
+    for piece in k.PIECE_STRING:
+        k.pieces[piece].place(k.field,0,0)
+        k.redraw()
+        k.pieces[piece].pickup(k.field)
+    # -rotations
+    for P in k.PIECE_STRING:
+        for j in range(2):
+            for i in range(4):
+                k.pieces[P].place(k.field,0,0)
+                k.redraw()
+                k.pieces[P].pickup(k.field)
+                k.pieces[P].ror()
+            k.pieces[P].flip()
