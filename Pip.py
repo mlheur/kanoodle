@@ -9,6 +9,9 @@ class Pip(object):
     def __str__(self):
         return(f'{self.X+1},{self.Y+1}')
     
+    def __int__(self):
+        return((1+self.Y) + (10 * (1+self.X)))
+    
     def rotate(self,sine_theta):
         newX = -1 * (self.Y * sine_theta)
         newY = (self.X * sine_theta)
@@ -36,3 +39,5 @@ if __name__ == "__main__":
         p.trxlate(2,0)
     for p in plist:
         print(f'Further: {p}')
+    for p in plist:
+        print(f'cast to int: {int(p)}')
