@@ -120,6 +120,7 @@ class Kanoodle(object):
             self.redraw()
         print(f'Finished loading game {gameid}')
 
+
 if __name__ == "__main__":
     from sys import argv
     DollarZero = argv.pop(0)

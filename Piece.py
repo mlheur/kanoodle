@@ -80,7 +80,7 @@ class Piece(object):
         self.pips = None
         del self.pips
 
-        print(f'Piece [{self.name}] initialized with offset [{self.offsets}]')
+        #print(f'Piece [{self.name}] initialized with offset [{self.offsets}]')
         #print(f'Piece [{self.name}] initialized with orientations [{self.orientations}]')
         #print(f'Piece [{self.name}] initialized with self.unique_keys [{self.unique_keys}]')
         #print(f'Piece [{self.name}] initialized with self.unique_orientations [{self.unique_orientations}]')
