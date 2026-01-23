@@ -125,7 +125,14 @@ if __name__ == "__main__":
     DollarZero = argv.pop(0)
 #    print(f'DollarZero={DollarZero}')
 
-    k = Kanoodle(argv.pop(0))
+    try:
+        f = argv.pop(0)
+        k = Kanoodle(f)
+    except FileNotFoundError as fne:
+        argv.push(f,0)
+        k = Kanoodle("Kanoodle.dat")
+    except:
+        k = Kanoodle("Kanoodle.dat")
     k.redraw()
 
     # -layout
