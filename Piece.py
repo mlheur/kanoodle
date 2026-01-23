@@ -6,6 +6,13 @@ from Pip import Pip
 
 class Piece(object):
 
+    def __computeLeftOffste(self):
+        minX = 99
+        for pip in self.pips:
+            if pip.Y == 0 and minX > pip.X:
+                minX = pip.X
+        return(minX * -1)
+
     def __ror(self):
         temp = self.maxX
         self.maxX = self.maxY
@@ -40,6 +47,10 @@ class Piece(object):
             self.pips.append(Pip(aXY[0],aXY[1]))
         self.__normalize()
 
+        self.offsets = dict()
+        self.offsets["rotate"] = list()
+        self.offsets["unique"] = list()
+
         self.orientations = list()
         self.unique_orientations = dict()
         self.unique_keys = list()
@@ -53,10 +64,13 @@ class Piece(object):
                     new_uniq.append(Pip(pip.X,pip.Y))
                 #print(f'Adding pip list [{new_pips}] to self.orientations')
                 self.orientations.append(new_pips)
+                leftoff = self.__computeLeftOffste()
+                self.offsets["rotate"].append(leftoff)
                 key = str(int(self))
                 if key not in self.unique_orientations:
                     self.unique_orientations[key] = new_uniq
                     self.unique_keys.append(key)
+                    self.offsets["unique"].append(leftoff)
                     self.qty_unique += 1
                 self.__ror()
             self.__flip()
@@ -66,6 +80,7 @@ class Piece(object):
         self.pips = None
         del self.pips
 
+        print(f'Piece [{self.name}] initialized with offset [{self.offsets}]')
         #print(f'Piece [{self.name}] initialized with orientations [{self.orientations}]')
         #print(f'Piece [{self.name}] initialized with self.unique_keys [{self.unique_keys}]')
         #print(f'Piece [{self.name}] initialized with self.unique_orientations [{self.unique_orientations}]')
@@ -177,12 +192,11 @@ class Piece(object):
         return True
     
     def getLeftOffset(self):
-        offX = 0
-        minX = 0
-        for pip in self.orientations[self.current_orientation]:
-            pass
-        return(offX)
-
+        if self.mode == "rotate":
+            return self.offsets[self.mode][self.current_orientation]
+        elif self.mode == "unique":
+            return self.offsets[self.mode][self.current_unique]
+    
 
 if __name__ == "__main__":
     p = Piece(["0","1,1;2,1;3,1;1,2;3,2"])
