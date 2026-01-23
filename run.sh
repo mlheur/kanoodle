@@ -1,1 +1,1 @@
-python3 Kanoodle.py
+python3 Kanoodle.py Kanoodle.dat 13

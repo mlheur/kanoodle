@@ -29,10 +29,6 @@
 #  - remember to increment on output
 
 
-DAT_FILENAME = "GamePieces.dat"
-START_FILENAME = "StartingPositions.dat"
-
-
 from Piece import Piece
 from Solver import Solver
 
@@ -59,18 +55,26 @@ class Kanoodle(object):
         self.colors[0]   = '\x1B[0m'
 
         self.pieces = dict()
+        self.loads  = dict()
         try:
             with open(dat_filename, 'r', encoding='utf-8') as f:
                 dimensions = f.readline().rstrip().split(",")
                 self.width = int(dimensions[0])
                 self.height = int(dimensions[1])
-                piece_line = f.readline().rstrip()
-                while piece_line:
-                    gp = Piece(piece_line)
-                    self.pieces[gp.name] = gp
-                    piece_line = f.readline().rstrip()
+
+                nextline = f.readline().rstrip()
+                while nextline:
+                    parts = nextline.split(":")
+                    if parts[0] in self.PIECE_STRING:
+                        gp = Piece(parts)
+                        self.pieces[gp.name] = gp
+                    elif type(int(parts[0])) == type(int(0)):
+                        self.loads[parts[0]] = parts[1]
+                    else:
+                        raise(RuntimeError(f'unexpected game data: nextline={nextline}'))
+                    nextline = f.readline().rstrip()
         except FileNotFoundError:
-            print(f'Fata: Could not find [{dat_filename}]')
+            print(f'Fatal: Could not find [{dat_filename}]')
             return
         except Exception as e:
             print(f'Fatal error [{e}]')
@@ -97,58 +101,48 @@ class Kanoodle(object):
             print(srow + self.colors[0])
         print("")
 
-    def load(self,load_filename,gameid):
-        try:
-            with open(load_filename, 'r', encoding='utf-8') as f:
-                gameline = f.readline().rstrip()
-                gameentry = gameline.split(":")
-                print(f'Starting to load game {gameid} from file {load_filename}')
-                if gameentry[0] == str(gameid):
-                    for pieceentry in gameentry[1].split(";"):
-                        piecepos = pieceentry.split(",")
-                        piece = piecepos[0]
-                        X = int(piecepos[1]) - 1
-                        Y = int(piecepos[2]) - 1
-                        for n in range(len(piecepos)-3):
-                            n += 3
-                            if piecepos[n] == "rol":
-                                self.pieces[piece].rol()
-                            if piecepos[n] == "ror":
-                                self.pieces[piece].ror()
-                            if piecepos[n] == "flip":
-                                self.pieces[piece].flip()
-                        if not self.pieces[piece].place(self.field,X,Y):
-                            raise(RuntimeError(f"Unable to place piece {piece} from gameid {gameid} from file {load_filename}"))
-                        self.redraw()
-                    print(f'Finished loading game {gameid} from file {load_filename}')
-                    return
-        except FileNotFoundError:
-            print(f'Fata: Could not find [{load_filename}]')
-            return
-        except Exception as e:
-            print(f'Fatal error [{e}]')
-            return
+    def load(self,gameid):
+        for pieceentry in self.loads[gameid].split(";"):
+            piecepos = pieceentry.split(",")
+            piece = piecepos[0]
+            X = int(piecepos[1]) - 1
+            Y = int(piecepos[2]) - 1
+            for n in range(len(piecepos)-3):
+                n += 3
+                if piecepos[n] == "rol":
+                    self.pieces[piece].rol()
+                if piecepos[n] == "ror":
+                    self.pieces[piece].ror()
+                if piecepos[n] == "flip":
+                    self.pieces[piece].flip()
+            if not self.pieces[piece].place(self.field,X,Y):
+                raise(RuntimeError(f"Unable to place piece {piece} from gameid {gameid}"))
+            self.redraw()
+        print(f'Finished loading game {gameid}')
 
 if __name__ == "__main__":
-    
-    k = Kanoodle(DAT_FILENAME)
-
-#    for P in PIECE_STRING:
-#        for j in range(2):
-#            for i in range(4):
-#                k.pieces[P].place(k.field,0,0)
-#                k.redraw()
-#                k.pieces[P].pickup(k.field)
-#                k.pieces[P].ror()
-#            k.pieces[P].flip()
-
     from sys import argv
+
+    DollarZero = argv.pop(0)
+    k = Kanoodle(argv.pop(0))
+    print(f'DollarZero={DollarZero}')
+    k.redraw()
+
     if "-layout" in argv:
         for piece in PIECE_STRING:
             k.pieces[piece].place(0,0)
             k.redraw()
             k.pieces[piece].pickup()
+    elif "-rotations" in argv:
+        for P in Piece.STRING:
+            for j in range(2):
+                for i in range(4):
+                    k.pieces[P].place(k.field,0,0)
+                    k.redraw()
+                    k.pieces[P].pickup(k.field)
+                    k.pieces[P].ror()
+                k.pieces[P].flip()
     else:
-        k.load(START_FILENAME,13)
+        k.load(argv.pop(0))
         try: Solver().solve(k)
         except KeyboardInterrupt: pass

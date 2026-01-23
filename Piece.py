@@ -6,16 +6,16 @@ from Pip import Pip
 
 class Piece(object):
 
-    def __init__(self, piece_line):
-        
+    def __init__(self, piece_gameentry):
         self.pips = list()
-        piece_gameentry = piece_line.split(":")
         self.name = piece_gameentry[0]
         all_points = piece_gameentry[1].split(";")
         self.maxX = 0
         self.maxY = 0
         for pt in all_points:
+            #print(f'pt={pt}')
             aXY = pt.split(",")
+            #print(f'aXY[0]={aXY[0]} aXY[1]={aXY[1]}')
             aXY[0] = int(aXY[0]) - 1
             aXY[1] = int(aXY[1]) - 1
             if aXY[0] > self.maxX: self.maxX = aXY[0]
@@ -102,7 +102,7 @@ class Piece(object):
 
 
 if __name__ == "__main__":
-    p = Piece("X:1,1;2,1;3,1;1,2;3,2")
+    p = Piece(["0","1,1;2,1;3,1;1,2;3,2"])
     print(f'PreRor: {p}')
     p.ror()
     print(f'PosRor: {p}')
