@@ -30,7 +30,6 @@
 
 
 from Piece import Piece
-from Solver import Solver
 
 
 class Kanoodle(object):
