@@ -16,7 +16,7 @@ function unit_test() {
 FinalRC=0
 for F in *.py; do
     SKIP=0
-    for S in "Kanoodle" "Solver"; do
+    for S in "Solver" ""; do
         if [ "${F}" = "${S}.py" ]; then SKIP=1; break; fi
     done
     if [ ${SKIP} -eq 0 ]; then
