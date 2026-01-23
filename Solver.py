@@ -54,4 +54,13 @@ class Solver(object):
 
 
 if __name__ == "__main__":
-    print("Use ./run.sh to run this solver from within Kanoodle.py")
+    from sys import argv
+    DollarZero = argv.pop(0)
+
+    from Kanoodle import Kanoodle
+
+    k = Kanoodle(argv.pop(0))
+    k.load(argv.pop(0))
+    s = Solver()
+    try: s.solve(k)
+    except KeyboardInterrupt: pass

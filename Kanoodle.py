@@ -122,10 +122,10 @@ class Kanoodle(object):
 
 if __name__ == "__main__":
     from sys import argv
-
     DollarZero = argv.pop(0)
+#    print(f'DollarZero={DollarZero}')
+
     k = Kanoodle(argv.pop(0))
-    print(f'DollarZero={DollarZero}')
     k.redraw()
 
     if "-layout" in argv:
@@ -142,7 +142,3 @@ if __name__ == "__main__":
                     k.pieces[P].pickup(k.field)
                     k.pieces[P].ror()
                 k.pieces[P].flip()
-    else:
-        k.load(argv.pop(0))
-        try: Solver().solve(k)
-        except KeyboardInterrupt: pass
