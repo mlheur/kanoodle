@@ -144,15 +144,15 @@ class Piece(object):
         else:
             self.current_orientation = self.current_orientation - 4
     
-    def toggle(self):
-        if self.mode == "rotate":
-            self.mode == "unique"
-        else:
-            self.mode = "rotate"
+    def reset(self):
+        self.mode = "rotate"
+        self.current_orientation = 0
+        self.current_unique = 0
 
     def next(self):
         if self.mode != "unique":
             self.mode = "unique"
+            self.current_unique = 0
         else:
             self.current_unique += 1
             if self.current_unique >= self.qty_unique:
@@ -169,12 +169,15 @@ class Piece(object):
     def place(self,field,X,Y):
 
         def put(p):
-            FieldX = p.X + X
-            FieldY = p.Y + Y
-            if field[FieldY][FieldX] == EMPTY:
-                field[FieldY][FieldX] = self.name
-            else:
-                self.pickup(field)
+            try:
+                FieldX = p.X + X
+                FieldY = p.Y + Y
+                if field[FieldY][FieldX] == EMPTY:
+                    field[FieldY][FieldX] = self.name
+                else:
+                    self.pickup(field)
+                    return False
+            except:
                 return False
             return True
 

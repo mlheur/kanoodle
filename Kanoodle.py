@@ -157,6 +157,7 @@ if __name__ == "__main__":
             k.pieces[P].pickup(k.field)
     # -leftoff
     for P in k.PIECE_STRING:
+        k.pieces[P].reset()
         while k.pieces[P].next():
             print(f'P[{k.pieces[P].name}] unique orientation [{k.pieces[P].current_unique}] has leftoff=[{k.pieces[P].getLeftOffset()}]')
             k.pieces[P].place(k.field,0,0)

@@ -1,29 +1,36 @@
 
 
 class Solver(object):
-    def solve(self,k):
-        print(f"++solve(k=[\n{k}\n])")
-        # Zeroeth: determine what are all the pieces of the game
-        from Piece import EMPTY
-        
+
+    def recount_hand(self):
         # First determine which game pieces are
         # off the board, in the player's hand.
-        pieces_onboard = dict()
-        pieces_inhand = dict()
+        self.pieces_onboard = dict()
+        self.pieces_inhand = dict()
         for row in k.field:
             for letter in row:
                 if letter in k.PIECE_STRING:
-                    pieces_onboard[letter] = True
+                    self.pieces_onboard[letter] = True
 
         for P in k.PIECE_STRING:
-            if not P in pieces_onboard:
-                pieces_inhand[P] = True
+            if not P in self.pieces_onboard:
+                self.pieces_inhand[P] = True
 
-        print(f'Solver: pieces_onboard=[{pieces_onboard}]')
 
-        while True in pieces_inhand.values():
-            # print(f'Solver: pieces_inhand=[{pieces_inhand}]')
-            for piece in pieces_inhand:
+
+    def solve(self,k,k2):
+        print(f"++solve(k=[\n{k}\n])")
+        
+        from Piece import EMPTY
+        
+        self.recount_hand()
+        print(f'Solver: self.pieces_onboard=[{self.pieces_onboard}]')
+
+        while True in self.pieces_inhand.values():
+            # print(f'Solver: self.pieces_inhand=[{self.pieces_inhand}]')
+            for P in self.pieces_inhand:
+                k.pieces[P].reset()
+
                 # The top-left-most pip of any piece may be somewhere other than
                 # 1,1.  Therefore, when we place that piece on the board we might
                 # have to offset the field location where the piece will be place()d.
@@ -49,8 +56,24 @@ class Solver(object):
                         localX += 1
                         if letter == EMPTY:
                             # Normalize the desired X,Y drop coordinate.
-                            dropX = localX + k.pieces[piece].getLeftOffset()
-                            dropY = localY # There's always a piece in the top row.
+                            print(f'found empty hole at {localX},{localY}')
+                            while k.pieces[P].next():
+                                print(f'Trying piece {P} in unique orientation {k.pieces[P].current_unique}')
+                                k.pieces[P].place(k2.field,0,0)
+                                k2.redraw()
+                                k.pieces[P].pickup(k2.field)
+                                dropX = localX + k.pieces[P].getLeftOffset()
+                                dropY = localY # There's always a piece in the top row.
+                                print(f'have offset empty hole at {dropX-1},{dropY-1}')
+                                k.pieces[P].place(k2.field,dropX-1,dropY-1)
+                                k2.redraw()
+                                k.pieces[P].pickup(k2.field)
+                                input("press enter")
+                                if k.pieces[P].place(k.field,dropX-1,dropY-1):
+                                    input("IT FITS!")
+                                    self.recount_hand()
+                                    break
+
 
 
 if __name__ == "__main__":
@@ -59,8 +82,10 @@ if __name__ == "__main__":
 
     from Kanoodle import Kanoodle
 
-    k = Kanoodle(argv.pop(0))
+    gamedata = argv.pop(0)
+    k = Kanoodle(gamedata)
+    k2 = Kanoodle(gamedata)
     k.load(argv.pop(0))
     s = Solver()
-    try: s.solve(k)
+    try: s.solve(k,k2)
     except KeyboardInterrupt: pass
