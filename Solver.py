@@ -59,6 +59,7 @@ class Solver(object):
                                             return True
                                     else:
                                         return True
+                            print(f'Cannot fit piece {P}, backout one step\n')
                             return False
 
 
@@ -72,7 +73,6 @@ if __name__ == "__main__":
     k = Kanoodle(gamedata)
     k2 = Kanoodle(gamedata)
     k.load(argv.pop(0))
-    k.redraw()
     s = Solver()
     try: s.solve(k,k2)
     except KeyboardInterrupt: pass
