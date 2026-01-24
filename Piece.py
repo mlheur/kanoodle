@@ -169,28 +169,31 @@ class Piece(object):
     def place(self,field,X,Y):
 
         def put(p):
-            try:
-                FieldX = p.X + X
-                FieldY = p.Y + Y
-                if field[FieldY][FieldX] == EMPTY:
-                    field[FieldY][FieldX] = self.name
-                else:
-                    self.pickup(field)
-                    return False
-            except:
+            FieldX = p.X + X
+            FieldY = p.Y + Y
+            if field[FieldY][FieldX] == EMPTY:
+                field[FieldY][FieldX] = self.name
+            else:
                 return False
             return True
 
-        if self.mode == "rotate":
-            for pip in self.orientations[self.current_orientation]:
-                if not put(pip):
-                    return False
-        elif self.mode == "unique":
-            key = self.unique_keys[self.current_unique]
-            for pip in self.unique_orientations[key]:
-                if not put(pip):
-                    return False
-        else:
+        try:
+            if self.mode == "rotate":
+                for pip in self.orientations[self.current_orientation]:
+                    if not put(pip):
+                        self.pickup(field)
+                        return False
+            elif self.mode == "unique":
+                key = self.unique_keys[self.current_unique]
+                for pip in self.unique_orientations[key]:
+                    if not put(pip):
+                        self.pickup(field)
+                        return False
+            else:
+                self.pickup(field)
+                return False
+        except:
+            self.pickup(field)
             return False
         return True
     

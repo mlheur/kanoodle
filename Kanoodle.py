@@ -116,8 +116,8 @@ class Kanoodle(object):
                     self.pieces[piece].flip()
             if not self.pieces[piece].place(self.field,X,Y):
                 raise(RuntimeError(f"Unable to place piece {piece} from gameid {gameid}"))
-            self.redraw()
-        print(f'Finished loading game {gameid}')
+            #self.redraw()
+        #print(f'Finished loading game {gameid}')
 
 
 if __name__ == "__main__":
