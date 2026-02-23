@@ -1,1 +1,1 @@
-python3 Solver.py Kanoodle.dat 13
+python3 Solver.py Kanoodle.dat 99

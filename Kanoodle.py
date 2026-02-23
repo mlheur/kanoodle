@@ -124,6 +124,83 @@ class Kanoodle(object):
             #self.redraw()
         self.redraw(f'Finished loading game {gameid}')
 
+    def getAt(self,X,Y):
+        if X<0 or X>=self.width or Y<0 or Y>=self.height:
+            return('#')
+        return(self.field[Y][X])
+    
+    def isEmpty(self,P):
+        return P == "-"
+    
+    def hasInvalidHoles(self):
+        for Y in range(len(self.field)):
+            for X in range(len(self.field[Y])):
+                if self.field[Y][X] == "-":
+                    bFlags = dict()
+                    bFlags["W1"] = self.isEmpty(self.getAt(X-1,Y))
+                    bFlags["N1"] = self.isEmpty(self.getAt(X,Y-1))
+
+                    bFlags["E1"] = self.isEmpty(self.getAt(X+1,Y))
+                    bFlags["E2"] = self.isEmpty(self.getAt(X+2,Y))
+                    bFlags["E3"] = self.isEmpty(self.getAt(X+3,Y))
+
+                    bFlags["S1"] = self.isEmpty(self.getAt(X,Y+1))
+                    bFlags["S2"] = self.isEmpty(self.getAt(X,Y+2))
+                    bFlags["S3"] = self.isEmpty(self.getAt(X,Y+3))
+
+                    bFlags["EN1"] = self.isEmpty(self.getAt(X+1,Y-1))
+                    bFlags["EN2"] = self.isEmpty(self.getAt(X+2,Y-1))
+                    bFlags["EN3"] = self.isEmpty(self.getAt(X+3,Y-1))
+
+                    bFlags["ES1"] = self.isEmpty(self.getAt(X+1,Y+1))
+                    bFlags["ES2"] = self.isEmpty(self.getAt(X+2,Y+1))
+                    bFlags["ES3"] = self.isEmpty(self.getAt(X+3,Y+1))
+
+                    bFlags["SW1"] = self.isEmpty(self.getAt(X-1,Y+1))
+                    bFlags["SW2"] = self.isEmpty(self.getAt(X-1,Y+2))
+                    bFlags["SW3"] = self.isEmpty(self.getAt(X-1,Y+3))
+
+                    bFlags["SE1"] = self.isEmpty(self.getAt(X+1,Y+1))
+                    bFlags["SE2"] = self.isEmpty(self.getAt(X+1,Y+2))
+                    bFlags["SE3"] = self.isEmpty(self.getAt(X+1,Y+3))
+
+                    outs = ""
+                    for bF in bFlags:
+                        outs += f'{bF}={bFlags[bF]} '
+                    print(outs)
+
+                    bEastOpen = True
+                    bEastLeaks = False
+                    for bF in bFlags:
+                        if bF in ["E1","E2","E3"]:
+                            if not bFlags[bF]:
+                                bEastOpen = False
+                        else:
+                            if bFlags[bF]:
+                                bEastLeaks = True
+
+                    bSouthOpen = True
+                    bSouthLeaks = False
+                    for bF in bFlags:
+                        if bF in ["S1","S2","S3"]:
+                            if not bFlags[bF]:
+                                bSouthOpen = False
+                        else:
+                            if bFlags[bF]:
+                                bSouthLeaks = True
+
+                    if bSouthOpen or bEastOpen:
+                        return False
+                    
+                    if bEastLeaks or bSouthLeaks:
+                        self.redraw()
+                        input(f'occupied X={X} Y={Y} bEastOpen={bEastOpen} bSouthOpen={bSouthOpen} bEastLeaks={bEastLeaks} bSouthLeaks={bSouthLeaks}')
+                        return True
+
+        return False
+
+
+
 
 if __name__ == "__main__":
     from sys import argv
