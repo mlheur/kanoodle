@@ -41,12 +41,15 @@ class Kanoodle(object):
         self.colors[EMPTY] = '\x1B[38;5;234m'
         self.colors["A"] = '\x1B[38;5;208m'
         self.colors["B"] = '\x1B[38;5;196m'
-        self.colors["C"] = '\x1B[38;5;20m'
+        self.colors["C"] = '\x1B[38;5;4m'
         self.colors["D"] = '\x1B[38;5;222m'
         self.colors["E"] = '\x1B[38;5;34m'
+        #self.colors["F"] = '\x1B[38;5;16m'
         self.colors["F"] = '\x1B[38;5;15m'
+        #self.colors["G"] = '\x1B[38;5;6m'
         self.colors["G"] = '\x1B[38;5;14m'
         self.colors["H"] = '\x1B[38;5;163m'
+        #self.colors["I"] = '\x1B[38;5;3m'
         self.colors["I"] = '\x1B[38;5;226m'
         self.colors["J"] = '\x1B[38;5;165m'
         self.colors["K"] = '\x1B[38;5;82m'
@@ -92,7 +95,9 @@ class Kanoodle(object):
             outs = f'{outs}{row}\n'
         return outs.rstrip()
     
-    def redraw(self):
+    def redraw(self,msg=None):
+        if msg is not None and msg != "":
+            print(msg)
         for row in self.field:
             srow = ""
             for letter in row:
@@ -117,8 +122,7 @@ class Kanoodle(object):
             if not self.pieces[piece].place(self.field,X,Y):
                 raise(RuntimeError(f"Unable to place piece {piece} from gameid {gameid}"))
             #self.redraw()
-        print(f'Finished loading game {gameid}')
-        self.redraw()
+        self.redraw(f'Finished loading game {gameid}')
 
 
 if __name__ == "__main__":
