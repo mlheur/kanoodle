@@ -1,23 +1,10 @@
+EMPTY = "-"
+
+
 from Pip import Pip
 
 
 class Piece(object):
-    EMPTY = "-"
-    STRING = "ABCDEFGHIJKL"
-    DATA = [
-        "A:0,0;1,0;1,1;1,2",
-        "B:0,0;0,1;1,0;1,1;1,2",
-        "C:0,0;0,1;0,2;0,3;1,0",
-        "D:0,0;0,1;0,2;0,3;1,2",
-        "E:0,0;0,1;1,1;1,2;1,3",
-        "F:0,0;0,1;1,1",
-        "G:0,0;0,1;0,2;1,2;2,2",
-        "H:0,0;0,1;1,1;1,2;2,2",
-        "I:0,0;1,0;2,0;0,1;2,1",
-        "J:0,0;0,1;0,2;0,3",
-        "K:0,0;0,1;1,0;1,1",
-        "L:0,1;1,0;1,1;1,2;2,1",
-    ]
 
     def __computeLeftOffste(self):
         minX = 99
@@ -47,10 +34,8 @@ class Piece(object):
         self.pips = list()
         self.name = piece_gameentry[0]
         all_points = piece_gameentry[1].split(";")
-
-        self.max = {"X":0,"Y":0}
-
-        self.pips = list()
+        self.maxX = 0
+        self.maxY = 0
         for pt in all_points:
             #print(f'pt={pt}')
             aXY = pt.split(",")
@@ -179,7 +164,7 @@ class Piece(object):
         for Y in range(len(field)):
             for X in range(len(field[Y])):
                 if field[Y][X] == self.name:
-                    field[Y][X] = self.EMPTY
+                    field[Y][X] = EMPTY
     
     def place(self,field,X,Y):
 
@@ -243,19 +228,3 @@ if __name__ == "__main__":
     p.flip()
     print(f'PosFlip: int(p)=[{int(p)}] {p}')
     print("")
-
-    pieces = dict()
-    DATA = list(Piece.DATA)
-    for P in Piece.STRING:
-        pieces[P] = Piece(DATA.pop(0))
-
-    for P in Piece.STRING:
-        print(str(pieces[P]))
-        print(f'p.xoff=[{p.xoff}]')
-
-    for line in Piece.DATA:
-        OUT = ""
-        for letter in line:
-            try: OUT += str(int(letter)-1)
-            except: OUT += letter
-        print(OUT)

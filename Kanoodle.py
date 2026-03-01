@@ -33,12 +33,12 @@ from Piece import Piece
 
 
 class Kanoodle(object):
-    width = 11
-    height = 5
+    PIECE_STRING = "ABCDEFGHIJKL"
 
-    def __init__(self):
+    def __init__(self, dat_filename):
         self.colors = dict()
-        self.colors[Piece.EMPTY] = '\x1B[38;5;234m'
+        from Piece import EMPTY
+        self.colors[EMPTY] = '\x1B[38;5;234m'
         self.colors["A"] = '\x1B[38;5;208m'
         self.colors["B"] = '\x1B[38;5;196m'
         self.colors["C"] = '\x1B[38;5;4m'
@@ -56,7 +56,6 @@ class Kanoodle(object):
         self.colors["L"] = '\x1B[38;5;245m'
         self.colors[0]   = '\x1B[0m'
 
-        DATA = list(Piece.DATA)
         self.pieces = dict()
         self.loads  = dict()
         try:
@@ -85,7 +84,7 @@ class Kanoodle(object):
         
         self.field = list()
         for Y in range(self.height):
-            self.field.append(list(Piece.EMPTY*self.width))
+            self.field.append(list(EMPTY*self.width))
         
     def __str__(self):
         outs = ""

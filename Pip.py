@@ -1,54 +1,42 @@
 
 
-class Pip(dict):
+class Pip(object):
 
-    def __init__(self, coords):
-        if type(coords) == type(list()):
-            for key in "XY":
-                self[key] = coords.pop(0)
-        else:
-            for key in "XY":
-                self[key] = coords[key]
+    def __init__(self,X,Y):
+        self.X = X
+        self.Y = Y
 
     def __str__(self):
-        return(f'{",".join(str(v) for v in self.values())}')
-
-    def __int__(self):
-        return(
-            10 * self["Y"] + self["X"]
-        )
+        return(f'{self.X+1},{self.Y+1}')
     
     def __int__(self):
         return((1+self.Y) + (10 * (1+self.X)))
     
     def rotate(self,sine_theta):
-        Pip.__init__(
-            self,
-            [
-                -1 * (self["Y"] * sine_theta),
-                     (self["X"] * sine_theta)
-            ]
-        )
+        newX = -1 * (self.Y * sine_theta)
+        newY = (self.X * sine_theta)
+        self.X = newX
+        self.Y = newY
     def ror(self): self.rotate(1)
     def rol(self): self.rotate(-1)
 
-    def slide(self,key,amt):
-        self[key] += amt
+    def trxlate(self,xoff,yoff):
+        self.X = self.X + xoff
+        self.Y = self.Y + yoff
 
 
 if __name__ == "__main__":
-
-    plist = [Pip([0,0]),Pip([1,0]),Pip([2,0]),Pip([0,1]),Pip([2,1])]
+    plist = {Pip(0,0),Pip(1,0),Pip(2,0),Pip(0,1),Pip(2,1)}
     for p in plist:
-        print(f'PreRor: {str(p)}')
+        print(f'PreRor: {p}')
     for p in plist:
         p.ror()
-        p.slide("X",1)
+        p.trxlate(1,0)
     for p in plist:
         print(f'PosRor: {p}')
     for p in plist:
         p.ror()
-        p.slide("X",2)
+        p.trxlate(2,0)
     for p in plist:
         print(f'Further: {p}')
     for p in plist:
