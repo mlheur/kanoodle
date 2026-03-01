@@ -18,6 +18,9 @@ class Pip(dict):
             10 * self["Y"] + self["X"]
         )
     
+    def __int__(self):
+        return((1+self.Y) + (10 * (1+self.X)))
+    
     def rotate(self,sine_theta):
         Pip.__init__(
             self,
@@ -48,3 +51,5 @@ if __name__ == "__main__":
         p.slide("X",2)
     for p in plist:
         print(f'Further: {p}')
+    for p in plist:
+        print(f'cast to int: {int(p)}')

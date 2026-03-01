@@ -1,5 +1,35 @@
+# List of Game Pieces.
+#  Syntax: x,y values of any one rotation of all the pips on a piece.
+# X :=> the column, the distance along the X axis, with 0 as leftmost and max_cols as rightmost.
+# Y :=> the row, the distance down the Y axis, with 0 as the topmost and max_rows as bottommost.
+# White       F:1,1;1,2;2,2
+# Purple      J:1,1;1,2;1,4;1,4
+# Orange      A:1,1;2,1;2,2;2,3
+# BrightGreen K:1,1;1,2;2,1;2,2
+# DarkGreen   E:1,1;1,2;2,2;2,3;2,4
+# Red         B:1,1;1,2;2,1;2,2;2,3
+# Azure       G:1,1;1,2,1,3;2,3;3,3
+# Grey        L:1,2;2,1;2,2;2,3;3,2
+# Blue        C:1,1;1,2;1,3;1,4;2,1
+# Pink        D:1,1;1,2;1,3;1,4;2,3
+# Magenta     H:1,1;1,2;2,2;2,3;3,3
+# Yellow      I:1,1;2,1;3,1;1,2;3,2
+
+## Design Choice:
+# The math used to rotate pieces want a 0,0 coordinate system;
+# Humans want a 1,1 coordinate system.
+# Either:
+# - Force one choice over the other.
+#  - 1-based means having to inc/dec before AND after EVERY operation.
+#  - 0-based means debugging, dat files and other programmer interactions have to
+#    use a non-intuitive base.
+# - Compromise:
+#  - 1-based DAT files, decrement on load
+#  - 0-based internally
+#  - remember to increment on output
+
+
 from Piece import Piece
-from Solver import Solver
 
 
 class Kanoodle(object):
@@ -11,12 +41,15 @@ class Kanoodle(object):
         self.colors[Piece.EMPTY] = '\x1B[38;5;234m'
         self.colors["A"] = '\x1B[38;5;208m'
         self.colors["B"] = '\x1B[38;5;196m'
-        self.colors["C"] = '\x1B[38;5;20m'
+        self.colors["C"] = '\x1B[38;5;4m'
         self.colors["D"] = '\x1B[38;5;222m'
         self.colors["E"] = '\x1B[38;5;34m'
+        #self.colors["F"] = '\x1B[38;5;16m'
         self.colors["F"] = '\x1B[38;5;15m'
+        #self.colors["G"] = '\x1B[38;5;6m'
         self.colors["G"] = '\x1B[38;5;14m'
         self.colors["H"] = '\x1B[38;5;163m'
+        #self.colors["I"] = '\x1B[38;5;3m'
         self.colors["I"] = '\x1B[38;5;226m'
         self.colors["J"] = '\x1B[38;5;165m'
         self.colors["K"] = '\x1B[38;5;82m'
@@ -25,9 +58,31 @@ class Kanoodle(object):
 
         DATA = list(Piece.DATA)
         self.pieces = dict()
-        for P in Piece.STRING:
-            self.pieces[P] = Piece(DATA.pop(0))
+        self.loads  = dict()
+        try:
+            with open(dat_filename, 'r', encoding='utf-8') as f:
+                dimensions = f.readline().rstrip().split(",")
+                self.width = int(dimensions[0])
+                self.height = int(dimensions[1])
 
+                nextline = f.readline().rstrip()
+                while nextline:
+                    parts = nextline.split(":")
+                    if parts[0] in self.PIECE_STRING:
+                        gp = Piece(parts)
+                        self.pieces[gp.name] = gp
+                    elif type(int(parts[0])) == type(int(0)):
+                        self.loads[parts[0]] = parts[1]
+                    else:
+                        raise(RuntimeError(f'unexpected game data: nextline={nextline}'))
+                    nextline = f.readline().rstrip()
+        except FileNotFoundError:
+            print(f'Fatal: Could not find [{dat_filename}]')
+            return
+        except Exception as e:
+            print(f'Fatal error [{e}]')
+            return
+        
         self.field = list()
         for Y in range(self.height):
             self.field.append(list(Piece.EMPTY*self.width))
@@ -41,7 +96,9 @@ class Kanoodle(object):
             outs = f'{outs}{row}\n'
         return outs.rstrip()
     
-    def redraw(self):
+    def redraw(self,msg=None):
+        if msg is not None and msg != "":
+            print(msg)
         for row in self.field:
             srow = ""
             for letter in row:
@@ -49,64 +106,66 @@ class Kanoodle(object):
             print(srow + self.colors[0])
         print("")
 
-    def load(self,load_filename,gameid):
-        try:
-            with open(load_filename, 'r', encoding='utf-8') as f:
-                gameline = f.readline().rstrip()
-                gameentry = gameline.split(":")
-                print(f'Starting to load game {gameid} from file {load_filename}')
-                if gameentry[0] == str(gameid):
-                    for pieceentry in gameentry[1].split(";"):
-                        piecepos = pieceentry.split(",")
-                        piece = piecepos[0]
-                        X = int(piecepos[1]) - 1
-                        Y = int(piecepos[2]) - 1
-                        for n in range(len(piecepos)-3):
-                            n += 3
-                            if piecepos[n] == "rol":
-                                self.pieces[piece].rol()
-                            if piecepos[n] == "ror":
-                                self.pieces[piece].ror()
-                            if piecepos[n] == "flip":
-                                self.pieces[piece].flip()
-                        if not self.pieces[piece].place(self.field,X,Y):
-                            raise(RuntimeError(f"Unable to place piece {piece} from gameid {gameid} from file {load_filename}"))
-                        self.redraw()
-                    print(f'Finished loading game {gameid} from file {load_filename}')
-                    return
-        except FileNotFoundError:
-            print(f'Fata: Could not find [{load_filename}]')
-            return
-        except Exception as e:
-            print(f'Fatal error [{e}]')
-            return
+    def load(self,gameid):
+        for pieceentry in self.loads[gameid].split(";"):
+            piecepos = pieceentry.split(",")
+            piece = piecepos[0]
+            X = int(piecepos[1]) - 1
+            Y = int(piecepos[2]) - 1
+            for n in range(len(piecepos)-3):
+                n += 3
+                if piecepos[n] == "rol":
+                    self.pieces[piece].rol()
+                if piecepos[n] == "ror":
+                    self.pieces[piece].ror()
+                if piecepos[n] == "flip":
+                    self.pieces[piece].flip()
+            if not self.pieces[piece].place(self.field,X,Y):
+                raise(RuntimeError(f"Unable to place piece {piece} from gameid {gameid}"))
+            #self.redraw()
+        self.redraw(f'Finished loading game {gameid}')
 
-
-def SyntaxError():
-    print()
 
 if __name__ == "__main__":
-    
-    k = Kanoodle()
-
     from sys import argv
     DollarZero = argv.pop(0)
+#    print(f'DollarZero={DollarZero}')
 
-    if "-layout" in argv:
-        for piece in Piece.STRING:
-            k.pieces[piece].place(0,0)
+    try:
+        f = argv.pop(0)
+        k = Kanoodle(f)
+    except FileNotFoundError as fne:
+        argv.push(f,0)
+        k = Kanoodle("Kanoodle.dat")
+    except:
+        k = Kanoodle("Kanoodle.dat")
+    k.redraw()
+
+    # -layout
+    for piece in k.PIECE_STRING:
+        k.pieces[piece].place(k.field,0,0)
+        k.redraw()
+        k.pieces[piece].pickup(k.field)
+    # -rotations
+    for P in k.PIECE_STRING:
+        for j in range(2):
+            for i in range(4):
+                k.pieces[P].place(k.field,0,0)
+                k.redraw()
+                k.pieces[P].pickup(k.field)
+                k.pieces[P].ror()
+            k.pieces[P].flip()
+    # -unique
+    for P in k.PIECE_STRING:
+        while k.pieces[P].next():
+            k.pieces[P].place(k.field,0,0)
             k.redraw()
-            k.pieces[piece].pickup()
-    elif "-rotations" in argv:
-        for P in Piece.STRING:
-            for j in range(2):
-                for i in range(4):
-                    k.pieces[P].place(k.field,0,0)
-                    k.redraw()
-                    k.pieces[P].pickup(k.field)
-                    k.pieces[P].ror()
-                k.pieces[P].flip()
-    else:
-        k.load(argv.pop(0),argv.pop(0))
-        try: Solver().solve(k)
-        except KeyboardInterrupt: pass
+            k.pieces[P].pickup(k.field)
+    # -leftoff
+    for P in k.PIECE_STRING:
+        k.pieces[P].reset()
+        while k.pieces[P].next():
+            print(f'P[{k.pieces[P].name}] unique orientation [{k.pieces[P].current_unique}] has leftoff=[{k.pieces[P].getLeftOffset()}]')
+            k.pieces[P].place(k.field,0,0)
+            k.redraw()
+            k.pieces[P].pickup(k.field)
