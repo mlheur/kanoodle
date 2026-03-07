@@ -31,18 +31,21 @@ def findSpotFor(P,k,hand,depth=None):
                     localX += 1
                     #print(f'checking cell X,Y {localX},{localY} P={P}')
                     if k.pieces[P].place(k.field,localX-1,localY-1):
-                        k.redraw()
-                        #input(f'hit enter\n') #, hand={hand}')
-                        if hand == "":
-                            #print(f'The last piece was placed, everything is done')
-                            return True
-                        else:
-                            #print(f'Go deeper')
-                            bFound = findSpotFor(hand[0],k,hand[1:],depth=None)
-                            if bFound:
-                                return True
+                        if k.hasSmallHoles():
                             k.pieces[P].pickup(k.field)
-                            #k.redraw()
+                        else:
+                            k.redraw()
+                            #input(f'hit enter\n') #, hand={hand}')
+                            if hand == "":
+                                #print(f'The last piece was placed, everything is done')
+                                return True
+                            else:
+                                #print(f'Go deeper')
+                                bFound = findSpotFor(hand[0],k,hand[1:],depth=None)
+                                if bFound:
+                                    return True
+                                k.pieces[P].pickup(k.field)
+                                #k.redraw()
         #print(f'exhausted all rotations with P=[{P}]')
         if len(hand) == 0:
             #print(f'failed after going all the way deep, back out one level and try something else.')
