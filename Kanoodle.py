@@ -34,9 +34,9 @@ from Piece import EMPTY
 
 
 class Kanoodle(object):
-    #PIECE_STRING = "ABCDEFGHIJKL"
+    PIECE_STRING = "ABCDEFGHIJKL"
     #PIECE_STRING = "LIEKABCDFGHJ"
-    PIECE_STRING = "DFGHCBAJEIKL"
+    #PIECE_STRING = "DFGHCBAJEIKL"
 
     def __init__(self, dat_filename):
         self.colors = dict()
@@ -135,19 +135,19 @@ class Kanoodle(object):
             'W': False
         }
         #print(f'nRow=[{nRow}] nCol=[{nCol}]')
-        if nRow <= 0:
+        if nRow <= 0 or (nCol<0 or nCol>=self.width):
             tBlocked['N'] = True
         else:
             tBlocked['N'] = not(self.field[nRow-1][nCol] == EMPTY)
-        if nRow >= self.height-1:
+        if nRow >= self.height-1 or (nCol<0 or nCol>=self.width):
             tBlocked['S'] = True
         else:
             tBlocked['S'] = not(self.field[nRow+1][nCol] == EMPTY)
-        if nCol >= self.width-1:
+        if nCol >= self.width-1 or (nRow<0 or nRow>=self.height):
             tBlocked['E'] = True
         else:
             tBlocked['E'] = not(self.field[nRow][nCol+1] == EMPTY)
-        if nCol <= 0:
+        if nCol <= 0 or (nRow<0 or nRow>=self.height):
             tBlocked['W'] = True
         else:
             tBlocked['W'] = not(self.field[nRow][nCol-1] == EMPTY)
@@ -172,18 +172,30 @@ class Kanoodle(object):
                         return True
                     elif nFalse == 1:
                         for sDir in tBlocked:
-                            if   tBlocked[sDir] == False and sDir == 'N' and nRow > 0:
+                            if   tBlocked[sDir] == False and sDir == 'N':
                                 tNeighbor = self.getNeighbors(nRow-1,nCol)
-                            elif tBlocked[sDir] == False and sDir == 'S' and nRow < self.height-1:
+                                tTwoDown =  self.getNeighbors(nRow-2,nCol)
+                                break
+                            elif tBlocked[sDir] == False and sDir == 'S':
                                 tNeighbor = self.getNeighbors(nRow+1,nCol)
-                            elif tBlocked[sDir] == False and sDir == 'E' and nCol < self.width-1:
+                                tTwoDown =  self.getNeighbors(nRow+2,nCol)
+                                break
+                            elif tBlocked[sDir] == False and sDir == 'E':
                                 tNeighbor = self.getNeighbors(nRow,nCol+1)
-                            elif tBlocked[sDir] == False and sDir == 'W' and nCol > 0:
+                                tTwoDown =  self.getNeighbors(nRow,nCol+2)
+                                break
+                            elif tBlocked[sDir] == False and sDir == 'W':
                                 tNeighbor = self.getNeighbors(nRow,nCol-1)
+                                tTwoDown =  self.getNeighbors(nRow,nCol-2)
+                                break
                         nFalse = self.countFalse(tNeighbor)
-                        #print(f'nRow=[{nRow}] nCol=[{nCol}] tBlocked=[{tBlocked}] sDir=[{sDir}] tNeighbor=[{tNeighbor}] nFalse=[{nFalse}]')
+                        #print(f'nRow=[{nRow}] nCol=[{nCol}] tBlocked=[{tBlocked}] sDir=[{sDir}] tNeighbor=[{tNeighbor}] tTwoDown=[{tTwoDown}] nFalse=[{nFalse}]')
                         if nFalse == 1:
                             return True
+                        if nFalse == 2:
+                            nFalse = self.countFalse(tTwoDown)
+                            if nFalse == 1:
+                                return True
                 nCol += 1
             nRow += 1
         return False
