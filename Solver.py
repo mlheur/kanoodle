@@ -6,9 +6,6 @@ DollarZero = argv.pop(0)
 gamedata = argv.pop(0)
 puzzle   = argv.pop(0)
 
-k = Kanoodle(gamedata)
-k.load(puzzle)
-
 
 def findSpotFor(P,k,hand,depth=None):
     if depth is None:
@@ -34,7 +31,7 @@ def findSpotFor(P,k,hand,depth=None):
                         if k.hasSmallHoles():
                             k.pieces[P].pickup(k.field)
                         else:
-                            k.redraw()
+                            #k.redraw()
                             #input(f'hit enter\n') #, hand={hand}')
                             if hand == "":
                                 #print(f'The last piece was placed, everything is done')
@@ -59,53 +56,7 @@ def findSpotFor(P,k,hand,depth=None):
             #print(f'tried all rotations of hand')
             return False
 
-                
-
-
-def __nothing__():
-    for row in k.field:
-        localX = 0
-        localY += 1
-        for letter in row:
-            localX += 1
-            print(f'checking cell X,Y {localX},{localY}')
-            if letter == EMPTY:
-                print(f'found empty hole at X,Y {localX},{localY}')
-                k.pieces[P].reset()
-                while k.pieces[P].next():
-                    print(f'checking unique rotation P={P} i={k.pieces[P].current_unique}')
-                    dropX = localX + k.pieces[P].getLeftOffset() - 1
-                    dropY = localY - 1
-                    print(f'computed zDrop X,Y {dropX},{dropY}')
-                    if k.pieces[P].place(k.field,dropX,dropY):
-                        k.redraw()
-                        input(f'hit enter, hand={hand}')
-                        if len(hand) > 0:
-                            Q = hand[0]
-                            hand = hand[1:]
-                            print(f'since P={P} is down, try to place Q={Q},hand={hand}')
-                            if findSpotFor(Q,k,hand,depth):
-                                return True
-                            else:
-                                pass
-                            k.pieces[P].pickup(k.field)
-                            hand += P
-                        else:
-                            if getHand(k) == "":
-                                print(f'That was the last piece, the puzzle is all done.')
-                                return True
-                            else:
-                                
-                                continue
-                    else:
-                        print(f'failed to place P={P} at X,Y hole {localX},{localY}; trying next rotation')
-                        continue
-                print(f'really failed to place P={P} at X,Y hole {localX},{localY}; searching for next hole')
-                continue
-    print(f'really really failed to place the piece on the board in any hole, returning piece P={P} to the hand, try another piece first.')
-    return False
-
-def getHand(k):
+def getHand(k,):
     hand = ""
     board = ""
     for row in k.field:
@@ -117,19 +68,54 @@ def getHand(k):
             hand += letter
     return hand
 
-hand = getHand(k)
-success = False
-for i in range(len(hand)):
-    P = hand[0]
-    hand = hand[1:]
-    #print(f'outer iterations: calling findSpotFor(P={P},hand={hand},k=\n{k}\n)')
-    if findSpotFor(P,k,hand):
-        #k.redraw()
-        success = True
-        break
-    hand += P
+starters = {
+    0:"ABCDEFGHIJKL",
+    1:"LIEKABCDFGHJ",
+    2:"DFGHCBAJEIKL",
+    3:"LKJIHGFEDCBA"
+}
 
-if success:
-    print(f'success')
-else:
-    print(f'failed')
+def try_hand(starterid):
+    k = Kanoodle(gamedata)
+    k.PIECE_STRING = starters[starterid]
+    k.starterid = starterid
+    k.load(puzzle)
+    hand = getHand(k)
+    success = False
+    for i in range(len(hand)):
+        P = hand[0]
+        hand = hand[1:]
+        #print(f'outer iterations: calling findSpotFor(P={P},hand={hand},k=\n{k}\n)')
+        if findSpotFor(P,k,hand):
+            #k.redraw()
+            success = True
+            break
+        hand += P
+
+    if success:
+        print(f'{starterid} success')
+        k.redraw()
+        # kill pool peers
+    else:
+        print(f'{starterid} failed')
+        # die
+
+from multiprocessing import Process
+import time
+pool = dict()
+for starterid in starters:
+    pool[starterid] = Process(target=try_hand, args=(starterid,))
+    pool[starterid].start()
+
+bKillAll = False
+while not bKillAll:
+    for starterid in starters:
+        pool[starterid].join(1)
+        if not pool[starterid].is_alive():
+            for starterid in starters:
+                pool[starterid].terminate()
+                time.sleep(0)
+                pool[starterid].kill()
+                time.sleep(0)
+                bKillAll = True
+            break

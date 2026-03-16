@@ -39,6 +39,7 @@ class Kanoodle(object):
     #PIECE_STRING = "DFGHCBAJEIKL"
 
     def __init__(self, dat_filename):
+        self.starterid = 0
         self.colors = dict()
         self.colors[EMPTY] = '\x1B[38;5;234m'
         self.colors["A"] = '\x1B[38;5;208m'
@@ -98,13 +99,14 @@ class Kanoodle(object):
         return outs.rstrip()
     
     def redraw(self,msg=None):
+        sTabs = f'{self.starterid} ' + self.starterid * "            "
         if msg is not None and msg != "":
-            print(msg)
+            print(sTabs+msg)
         for row in self.field:
             srow = ""
             for letter in row:
                 srow += self.colors[letter] + letter + " "
-            print(srow + self.colors[0])
+            print(sTabs+srow + self.colors[0])
         print("")
 
     def load(self,gameid):
