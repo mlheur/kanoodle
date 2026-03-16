@@ -1,0 +1,1 @@
+ps -ef | grep -v $$ | grep 'python3 ./Solver.py Kanoodle.dat ' | awk '{print $2}' | xargs -I@ kill @
