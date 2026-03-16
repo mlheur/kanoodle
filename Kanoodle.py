@@ -99,7 +99,7 @@ class Kanoodle(object):
         return outs.rstrip()
     
     def redraw(self,msg=None):
-        sTabs = f'{self.starterid} ' + self.starterid * "            "
+        sTabs = f'{self.starterid} ' + self.starterid * "   "
         if msg is not None and msg != "":
             print(sTabs+msg)
         for row in self.field:
@@ -127,7 +127,7 @@ class Kanoodle(object):
                 self.redraw()
                 raise(RuntimeError(f"Unable to place piece {piece} from gameid {gameid}"))
             #self.redraw()
-        self.redraw(f'Finished loading game {gameid}')
+        #self.redraw(f'Finished loading game {gameid}')
 
     def getNeighbors(self,nRow,nCol):
         tBlocked = {

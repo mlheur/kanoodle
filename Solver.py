@@ -1,6 +1,10 @@
+#!/usr/bin/env python3
+
 from sys import argv
 from Kanoodle import Kanoodle
 from Piece import EMPTY
+from random import shuffle
+from subprocess import run as shell
 
 DollarZero = argv.pop(0)
 gamedata = argv.pop(0)
@@ -68,12 +72,6 @@ def getHand(k,):
             hand += letter
     return hand
 
-starters = {
-    0:"ABCDEFGHIJKL",
-    1:"LIEKABCDFGHJ",
-    2:"DFGHCBAJEIKL",
-    3:"LKJIHGFEDCBA"
-}
 
 def try_hand(starterid):
     k = Kanoodle(gamedata)
@@ -100,22 +98,39 @@ def try_hand(starterid):
         print(f'{starterid} failed')
         # die
 
-from multiprocessing import Process
-import time
-pool = dict()
-for starterid in starters:
-    pool[starterid] = Process(target=try_hand, args=(starterid,))
-    pool[starterid].start()
+def worker_found_solution(pool):
+    for i in pool:
+        pool[i].join(0.0)
+        if not pool[i].is_alive():
+            return True
+    return False
 
+k = Kanoodle(gamedata)
+k.load(puzzle)
+k.redraw(f"Loaded puzzle {puzzle}")
+
+from multiprocessing import Process
+from time import sleep
+starters = dict()
+pool = dict()
 bKillAll = False
+for i in range(48):
+    start = list(Kanoodle.PIECE_STRING)
+    shuffle(start)
+    starters[i] = start
+    print(f"creating solver [{i}] with seed [{start}]")
+    pool[i] = Process(target=try_hand, args=(i,))
+    pool[i].start()
+    sleep(0.2)
+    bKillAll = worker_found_solution(pool)
+    if bKillAll:
+        break
+
 while not bKillAll:
-    for starterid in starters:
-        pool[starterid].join(1)
-        if not pool[starterid].is_alive():
-            for starterid in starters:
-                pool[starterid].terminate()
-                time.sleep(0)
-                pool[starterid].kill()
-                time.sleep(0)
-                bKillAll = True
-            break
+    bKillAll = worker_found_solution(pool)
+
+for i in pool:
+    pool[i].terminate()
+    pool[i].kill()
+
+shell(["ksh","/home/marc/devel/kanoodle/do_kill.sh"])
